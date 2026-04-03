@@ -1,0 +1,6 @@
+const router= require('express').Router()
+const imageController= require("../controller/ImageController")
+router.post("/img",imageController.createImg)
+router.get("/img",imageController.getImg)
+router.post("/img",imageController.createImg)
+router.delete("/img/:id",imageController.deleteImg)
