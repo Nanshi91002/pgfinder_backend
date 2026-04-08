@@ -2,6 +2,7 @@ const router = require("express").Router()
 const paymentController = require("../controller/PaymentController")
 
 router.post("/payment", paymentController.createPayment)
+router.post("/create-order", paymentController.createRazorpayOrder)
 
 router.get("/payments", paymentController.getPayments)
 

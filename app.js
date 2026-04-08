@@ -21,7 +21,7 @@ const reviewRoutes = require("./src/routes/ReviewRoutes");
 app.use("/review", reviewRoutes);
 
 const PaymentRoutes = require("./src/routes/PaymentRoutes");
-app.use("/review", PaymentRoutes);
+app.use("/payment", PaymentRoutes);
 
 const PORT = process.env.PORT || 3000;
 

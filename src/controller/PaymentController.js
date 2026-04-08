@@ -1,5 +1,65 @@
 const paymentSchema = require("../models/paymentModel")
 
+const createRazorpayOrder = async (req, res) => {
+    try {
+        const razorpayKeyId = process.env.RAZORPAY_KEY_ID;
+        const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET;
+
+        if (!razorpayKeyId || !razorpayKeySecret) {
+            return res.status(500).json({
+                message: "Razorpay keys are not configured on the server."
+            });
+        }
+
+        const amount = Number(req.body?.amount || 0);
+        const currency = String(req.body?.currency || "INR");
+        const receipt = String(req.body?.receipt || `receipt_${Date.now()}`);
+        const notes = Object.fromEntries(
+            Object.entries(req.body?.notes || {}).map(([key, value]) => [key, String(value ?? "")])
+        );
+
+        if (!Number.isFinite(amount) || amount <= 0) {
+            return res.status(400).json({
+                message: "A valid payment amount is required."
+            });
+        }
+
+        const response = await fetch("https://api.razorpay.com/v1/orders", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Basic ${Buffer.from(`${razorpayKeyId}:${razorpayKeySecret}`).toString("base64")}`
+            },
+            body: JSON.stringify({
+                amount,
+                currency,
+                receipt,
+                notes
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            return res.status(response.status).json({
+                message: data?.error?.description || data?.error?.reason || "Failed to create Razorpay order.",
+                error: data
+            });
+        }
+
+        return res.status(200).json({
+            message: "Razorpay order created successfully",
+            key: razorpayKeyId,
+            order: data
+        });
+    } catch (err) {
+        return res.status(500).json({
+            message: err.message || "Failed to create Razorpay order.",
+            error: err
+        });
+    }
+};
+
 
 // CREATE PAYMENT
 const createPayment = async(req,res)=>{
@@ -83,6 +143,7 @@ const deletePayment = async(req,res)=>{
 
 module.exports={
     createPayment,
+    createRazorpayOrder,
     getPayments,
     updatePayment,
     deletePayment
